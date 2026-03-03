@@ -54,6 +54,7 @@ export class RoutesService {
       time,
     );
     const activeServicesCte = buildActiveServicesCte(serviceDate, weekday);
+    const serviceSeconds = toSeconds(serviceTime);
 
     return this.prisma.$queryRaw<ApiRouteTrip>(
       Prisma.sql`
@@ -72,7 +73,30 @@ export class RoutesService {
           current_stop.stop_id AS "currentStopId",
           current_stop.stop_name AS "currentStopName",
           current_stop.arrival_time AS "currentArrivalTime",
-          current_stop.departure_time AS "currentDepartureTime"
+          current_stop.departure_time AS "currentDepartureTime",
+          CASE
+            WHEN ${Prisma.raw(
+              timeToSeconds(
+                'COALESCE(first_stop.departure_time, first_stop.arrival_time)',
+              ),
+            )} <= ${serviceSeconds}
+              AND ${Prisma.raw(
+                timeToSeconds(
+                  'COALESCE(last_stop.departure_time, last_stop.arrival_time)',
+                ),
+              )} >= ${serviceSeconds}
+            THEN TRUE
+            ELSE FALSE
+          END AS "isActive",
+          CASE
+            WHEN ${Prisma.raw(
+              timeToSeconds(
+                'COALESCE(last_stop.departure_time, last_stop.arrival_time)',
+              ),
+            )} < ${serviceSeconds}
+            THEN TRUE
+            ELSE FALSE
+          END AS "isPast"
         FROM trips t
         LEFT JOIN LATERAL (
           SELECT
@@ -107,13 +131,19 @@ export class RoutesService {
           FROM stop_times st
           JOIN stops s ON s.stop_id = st.stop_id
           WHERE st.trip_id = t.trip_id
-            AND COALESCE(st.departure_time, st.arrival_time) <= ${serviceTime}
+            AND ${Prisma.raw(
+              timeToSeconds('COALESCE(st.departure_time, st.arrival_time)'),
+            )} <= ${serviceSeconds}
+            AND ${serviceSeconds} <= ${Prisma.raw(
+              timeToSeconds(
+                'COALESCE(last_stop.departure_time, last_stop.arrival_time)',
+              ),
+            )}
           ORDER BY st.stop_sequence DESC
           LIMIT 1
         ) AS current_stop ON TRUE
         WHERE t.route_id = ${routeId}
           AND t.service_id IN (SELECT service_id FROM active_services)
-          AND COALESCE(last_stop.departure_time, last_stop.arrival_time) >= ${serviceTime}
         ORDER BY
           CASE
             WHEN current_stop.stop_id IS NULL THEN 1
@@ -164,4 +194,17 @@ export class RoutesService {
       `,
     );
   }
+}
+
+function toSeconds(value: string) {
+  const [hours, minutes, seconds] = value.split(':').map((part) => Number(part));
+  return (hours || 0) * 3600 + (minutes || 0) * 60 + (seconds || 0);
+}
+
+function timeToSeconds(expression: string) {
+  return `(
+    split_part(${expression}, ':', 1)::int * 3600 +
+    split_part(${expression}, ':', 2)::int * 60 +
+    split_part(${expression}, ':', 3)::int
+  )`;
 }

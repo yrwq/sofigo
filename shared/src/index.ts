@@ -69,6 +69,8 @@ export type ApiRouteTrip = {
   currentStopName: string | null;
   currentArrivalTime: string | null;
   currentDepartureTime: string | null;
+  isActive: boolean;
+  isPast: boolean;
 };
 
 export type TripStopTime = {

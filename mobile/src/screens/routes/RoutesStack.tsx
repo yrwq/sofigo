@@ -7,7 +7,13 @@ import { palette } from '@/theme/theme';
 export type RoutesStackParamList = {
   RoutesList: undefined;
   RouteTrips: { routeId: string; routeName: string };
-  TripStops: { tripId: string; routeName: string; headsign?: string | null };
+  TripStops: {
+    tripId: string;
+    routeName: string;
+    headsign?: string | null;
+    currentStopId?: string | null;
+    isPast?: boolean;
+  };
 };
 
 const Stack = createNativeStackNavigator<RoutesStackParamList>();

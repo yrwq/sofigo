@@ -15,3 +15,14 @@ export function formatDisplayTime(value?: string | null) {
   }
   return value;
 }
+
+export function timeToSeconds(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+  const [h, m, s] = value.split(':').map((part) => Number(part));
+  if (Number.isNaN(h) || Number.isNaN(m)) {
+    return null;
+  }
+  return (h ?? 0) * 3600 + (m ?? 0) * 60 + (Number.isNaN(s) ? 0 : (s ?? 0));
+}

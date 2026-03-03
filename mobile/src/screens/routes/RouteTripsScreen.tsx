@@ -1,13 +1,17 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ApiRouteTrip } from '@sofigo/transit-models';
 import { useQuery } from '@tanstack/react-query';
-import { FlatList, Pressable, StyleSheet, Text } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/Screen';
 import { getApiBaseUrl } from '@/lib/api';
 import { fetchJson } from '@/lib/http';
 import type { RoutesStackParamList } from '@/screens/routes/RoutesStack';
 import { palette, spacing } from '@/theme/theme';
-import { formatClockTime, formatDisplayTime } from '@/utils/time';
+import {
+  formatClockTime,
+  formatDisplayTime,
+  timeToSeconds,
+} from '@/utils/time';
 
 type Props = NativeStackScreenProps<RoutesStackParamList, 'RouteTrips'>;
 
@@ -19,8 +23,41 @@ export function RouteTripsScreen({ route, navigation }: Props) {
     queryKey: ['routes', routeId, 'trips', apiBaseUrl],
     queryFn: () =>
       fetchJson<ApiRouteTrip[]>(
-        `${apiBaseUrl}/routes/${routeId}/trips?limit=80&time=${formatClockTime()}`,
+        `${apiBaseUrl}/routes/${routeId}/trips?limit=200&time=${formatClockTime()}`,
       ),
+  });
+
+  const trips = (data ?? []).map((trip) => {
+    const first =
+      timeToSeconds(trip.firstDepartureTime) ??
+      timeToSeconds(trip.firstArrivalTime) ??
+      null;
+    const last =
+      timeToSeconds(trip.lastDepartureTime) ??
+      timeToSeconds(trip.lastArrivalTime) ??
+      null;
+    const current =
+      timeToSeconds(trip.currentDepartureTime) ??
+      timeToSeconds(trip.currentArrivalTime) ??
+      null;
+
+    const status = trip.isActive ? 'active' : trip.isPast ? 'past' : 'upcoming';
+
+    return {
+      ...trip,
+      status,
+      sortKey: current ?? first ?? last ?? 0,
+    };
+  });
+
+  const orderedTrips = trips.sort((a, b) => {
+    const rank = (value: typeof a.status) =>
+      value === 'past' ? 0 : value === 'active' ? 1 : 2;
+    const rankDiff = rank(a.status) - rank(b.status);
+    if (rankDiff !== 0) {
+      return rankDiff;
+    }
+    return a.sortKey - b.sortKey;
   });
 
   return (
@@ -31,39 +68,47 @@ export function RouteTripsScreen({ route, navigation }: Props) {
         </Pressable>
       ) : null}
       <FlatList
-        data={data ?? []}
+        data={orderedTrips}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <Pressable
-            style={styles.card}
+            style={[styles.card, item.status === 'past' && styles.cardVisited]}
             onPress={() =>
               navigation.navigate('TripStops', {
                 tripId: item.id,
                 routeName,
                 headsign: item.headsign,
+                currentStopId: item.currentStopId,
+                isPast: item.status === 'past',
               })
             }
           >
-            {item.currentStopId ? (
-              <Text style={styles.badge}>In progress</Text>
-            ) : (
-              <Text style={styles.badgeMuted}>Upcoming</Text>
-            )}
-            <Text style={styles.time}>
-              {formatDisplayTime(
-                item.currentDepartureTime ??
-                  item.currentArrivalTime ??
-                  item.firstDepartureTime ??
-                  item.firstArrivalTime,
-              )}
-            </Text>
-            <Text style={styles.headsign}>
-              {item.currentStopName ||
-                item.headsign ||
-                item.firstStopName ||
-                'Direction not specified'}
-            </Text>
+            <View style={styles.row}>
+              <View
+                style={[
+                  styles.line,
+                  item.status === 'past' && styles.lineVisited,
+                  item.status === 'active' && styles.lineActive,
+                ]}
+              />
+              <View style={styles.content}>
+                <Text style={styles.time}>
+                  {formatDisplayTime(
+                    item.currentDepartureTime ??
+                      item.currentArrivalTime ??
+                      item.firstDepartureTime ??
+                      item.firstArrivalTime,
+                  )}
+                </Text>
+                <Text style={styles.headsign}>
+                  {item.currentStopName ||
+                    item.headsign ||
+                    item.firstStopName ||
+                    'Direction not specified'}
+                </Text>
+              </View>
+            </View>
           </Pressable>
         )}
       />
@@ -84,25 +129,29 @@ const styles = StyleSheet.create({
     borderColor: palette.border,
     gap: spacing.xs,
   },
-  badge: {
-    alignSelf: 'flex-start',
-    backgroundColor: palette.accent,
-    color: '#ffffff',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    fontSize: 11,
-    fontWeight: '700',
+  cardVisited: {
+    backgroundColor: '#edf2f7',
   },
-  badgeMuted: {
-    alignSelf: 'flex-start',
-    backgroundColor: palette.surface,
-    color: palette.muted,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  line: {
+    width: 4,
+    alignSelf: 'stretch',
     borderRadius: 999,
-    fontSize: 11,
-    fontWeight: '700',
+    backgroundColor: palette.border,
+  },
+  lineActive: {
+    backgroundColor: palette.accent,
+  },
+  lineVisited: {
+    backgroundColor: palette.muted,
+  },
+  content: {
+    flex: 1,
+    gap: spacing.xs,
   },
   time: {
     fontSize: 20,

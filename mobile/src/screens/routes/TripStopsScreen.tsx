@@ -13,7 +13,7 @@ type Props = NativeStackScreenProps<RoutesStackParamList, 'TripStops'>;
 
 export function TripStopsScreen({ route }: Props) {
   const apiBaseUrl = getApiBaseUrl();
-  const { tripId } = route.params;
+  const { tripId, currentStopId, isPast } = route.params;
 
   const { data, isError } = useQuery({
     queryKey: ['trips', tripId, 'stop-times', apiBaseUrl],
@@ -34,7 +34,27 @@ export function TripStopsScreen({ route }: Props) {
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <View style={styles.row}>
-            <View style={styles.card}>
+            <View style={styles.timeline}>
+              <View
+                style={[
+                  styles.line,
+                  (isPast ||
+                    isPastStop(data ?? [], currentStopId ?? '', item.stopId)) &&
+                    styles.lineVisited,
+                  item.stopId === currentStopId && styles.lineCurrent,
+                ]}
+              />
+            </View>
+            <View
+              style={[
+                styles.card,
+                (isPast ||
+                  (currentStopId &&
+                    item.stopId !== currentStopId &&
+                    isPastStop(data ?? [], currentStopId, item.stopId))) &&
+                  styles.cardVisited,
+              ]}
+            >
               <Text style={styles.stopName}>{item.stopName}</Text>
               <Text style={styles.meta}>
                 {formatDisplayTime(item.departureTime || item.arrivalTime)}
@@ -47,10 +67,45 @@ export function TripStopsScreen({ route }: Props) {
   );
 }
 
+function isPastStop(
+  stops: ApiTripStopTime[],
+  currentId: string,
+  stopId: string,
+) {
+  const currentIndex = stops.findIndex((stop) => stop.stopId === currentId);
+  const stopIndex = stops.findIndex((stop) => stop.stopId === stopId);
+  if (currentIndex === -1 || stopIndex === -1) {
+    return false;
+  }
+  return stopIndex < currentIndex;
+}
+
 const styles = StyleSheet.create({
   list: {
     gap: spacing.md,
     paddingBottom: spacing.xl,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'stretch',
+  },
+  timeline: {
+    width: 12,
+    alignItems: 'center',
+    justifyContent: 'stretch',
+  },
+  line: {
+    width: 3,
+    flex: 1,
+    backgroundColor: palette.border,
+    borderRadius: 999,
+  },
+  lineVisited: {
+    backgroundColor: palette.muted,
+  },
+  lineCurrent: {
+    backgroundColor: palette.accent,
   },
   card: {
     flex: 1,
@@ -61,6 +116,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: palette.border,
     gap: 4,
+  },
+  cardVisited: {
+    backgroundColor: '#edf2f7',
   },
   stopName: {
     fontSize: 15,

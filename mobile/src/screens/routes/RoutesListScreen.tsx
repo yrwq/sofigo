@@ -79,7 +79,7 @@ export function RoutesListScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   search: {
     backgroundColor: palette.card,
-    borderRadius: 14,
+    borderRadius: 10,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     fontSize: 15,
