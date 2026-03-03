@@ -60,7 +60,10 @@ export function RoutesListScreen({ navigation }: Props) {
             onPress={() =>
               navigation.navigate('RouteTrips', {
                 routeId: item.id,
-                routeName: item.shortName || item.longName || 'Route',
+                routeName:
+                  item.shortName && item.longName
+                    ? `${item.shortName} · ${item.longName}`
+                    : item.shortName || item.longName || 'Route',
               })
             }
           >

@@ -48,7 +48,7 @@ export function TripStopsScreen({ route }: Props) {
         listRef.current?.scrollToIndex({
           index: stopIndex,
           animated: true,
-          viewPosition: 0,
+          viewPosition: 0.15,
         });
       }, 120);
       return () => clearTimeout(timer);
