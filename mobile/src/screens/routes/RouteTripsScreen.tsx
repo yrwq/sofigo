@@ -45,13 +45,24 @@ export function RouteTripsScreen({ route, navigation }: Props) {
               })
             }
           >
+            {item.currentStopId ? (
+              <Text style={styles.badge}>In progress</Text>
+            ) : (
+              <Text style={styles.badgeMuted}>Upcoming</Text>
+            )}
             <Text style={styles.time}>
               {formatDisplayTime(
-                item.firstDepartureTime ?? item.firstArrivalTime,
+                item.currentDepartureTime ??
+                  item.currentArrivalTime ??
+                  item.firstDepartureTime ??
+                  item.firstArrivalTime,
               )}
             </Text>
             <Text style={styles.headsign}>
-              {item.headsign || item.firstStopName || 'Direction not specified'}
+              {item.currentStopName ||
+                item.headsign ||
+                item.firstStopName ||
+                'Direction not specified'}
             </Text>
           </Pressable>
         )}
@@ -72,6 +83,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: palette.border,
     gap: spacing.xs,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    backgroundColor: palette.accent,
+    color: '#ffffff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  badgeMuted: {
+    alignSelf: 'flex-start',
+    backgroundColor: palette.surface,
+    color: palette.muted,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    fontSize: 11,
+    fontWeight: '700',
   },
   time: {
     fontSize: 20,

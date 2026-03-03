@@ -64,7 +64,15 @@ export class RoutesService {
           first_stop.stop_id AS "firstStopId",
           first_stop.stop_name AS "firstStopName",
           first_stop.arrival_time AS "firstArrivalTime",
-          first_stop.departure_time AS "firstDepartureTime"
+          first_stop.departure_time AS "firstDepartureTime",
+          last_stop.stop_id AS "lastStopId",
+          last_stop.stop_name AS "lastStopName",
+          last_stop.arrival_time AS "lastArrivalTime",
+          last_stop.departure_time AS "lastDepartureTime",
+          current_stop.stop_id AS "currentStopId",
+          current_stop.stop_name AS "currentStopName",
+          current_stop.arrival_time AS "currentArrivalTime",
+          current_stop.departure_time AS "currentDepartureTime"
         FROM trips t
         LEFT JOIN LATERAL (
           SELECT
@@ -78,14 +86,45 @@ export class RoutesService {
           ORDER BY st.stop_sequence ASC
           LIMIT 1
         ) AS first_stop ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT
+            st.stop_id,
+            s.stop_name,
+            st.arrival_time,
+            st.departure_time
+          FROM stop_times st
+          JOIN stops s ON s.stop_id = st.stop_id
+          WHERE st.trip_id = t.trip_id
+          ORDER BY st.stop_sequence DESC
+          LIMIT 1
+        ) AS last_stop ON TRUE
+        LEFT JOIN LATERAL (
+          SELECT
+            st.stop_id,
+            s.stop_name,
+            st.arrival_time,
+            st.departure_time
+          FROM stop_times st
+          JOIN stops s ON s.stop_id = st.stop_id
+          WHERE st.trip_id = t.trip_id
+            AND COALESCE(st.departure_time, st.arrival_time) <= ${serviceTime}
+          ORDER BY st.stop_sequence DESC
+          LIMIT 1
+        ) AS current_stop ON TRUE
         WHERE t.route_id = ${routeId}
           AND t.service_id IN (SELECT service_id FROM active_services)
-          AND COALESCE(
+          AND COALESCE(last_stop.departure_time, last_stop.arrival_time) >= ${serviceTime}
+        ORDER BY
+          CASE
+            WHEN current_stop.stop_id IS NULL THEN 1
+            ELSE 0
+          END ASC,
+          COALESCE(
+            current_stop.departure_time,
+            current_stop.arrival_time,
             first_stop.departure_time,
             first_stop.arrival_time
-          ) >= ${serviceTime}
-        ORDER BY
-          COALESCE(first_stop.departure_time, first_stop.arrival_time) ASC,
+          ) ASC,
           t.trip_id ASC
         LIMIT ${limit}
       `,

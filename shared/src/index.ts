@@ -61,6 +61,14 @@ export type ApiRouteTrip = {
   firstStopName: string | null;
   firstArrivalTime: string | null;
   firstDepartureTime: string | null;
+  lastStopId: string | null;
+  lastStopName: string | null;
+  lastArrivalTime: string | null;
+  lastDepartureTime: string | null;
+  currentStopId: string | null;
+  currentStopName: string | null;
+  currentArrivalTime: string | null;
+  currentDepartureTime: string | null;
 };
 
 export type TripStopTime = {
