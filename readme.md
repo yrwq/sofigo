@@ -10,32 +10,40 @@ Public transit companion that shows nearby stops, upcoming arrivals, and full ro
 - Bun
 - Postgres 17 (docker or local install)
 
-## configure env
+Node version is pinned in `.node-version`.
+
+## run
+
+1. configure env
 
 ```bash
 cp .env.example .env
 ```
 
-## start database
+2. install deps
+
+```bash
+bun install
+```
+
+3. start db
 
 ```bash
 docker compose up -d db
 ```
 
-## apply schema
+4. apply schema
 
 ```bash
 bun run --cwd backend prisma:push
 ```
 
-## run
+5. start backend + mobile
 
 ```bash
 bun run dev
 ```
 
-Uses turbo to run both backend and mobile in parallel
+Uses turbo to run both backend and mobile in parallel.
 
-## api
-
-Docs are available via Swagger at `http://localhost:3000/docs`.
+API docs are available via Swagger at `http://localhost:3000/docs` (or your backend URL).
