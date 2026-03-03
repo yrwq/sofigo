@@ -126,3 +126,11 @@ export type ShapePoint = {
   location: StopLocation;
   distanceTraveledKm: number | null;
 };
+
+export type ApiShapePoint = {
+  shapeId: string;
+  sequence: number;
+  lat: number;
+  lon: number;
+  distTraveled: number | null;
+};

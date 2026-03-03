@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import type { ApiTripStopTime } from '@sofigo/transit-models';
+import type { ApiShapePoint, ApiTripStopTime } from '@sofigo/transit-models';
 import { PrismaService } from '@/prisma/prisma.service';
-import type { TripStopTimesQueryDto } from '@/trips/trips.dto';
+import type { TripShapeQueryDto, TripStopTimesQueryDto } from '@/trips/trips.dto';
 
 @Injectable()
 export class TripsService {
@@ -31,6 +31,37 @@ export class TripsService {
         WHERE st.trip_id = ${tripId}
         ORDER BY st.stop_sequence ASC
         LIMIT ${limit}
+      `,
+    );
+
+    return rows;
+  }
+
+  async listShapePoints(tripId: string, query: TripShapeQueryDto) {
+    const shapeId =
+      query.shapeId ??
+      (
+        await this.prisma.trip.findUnique({
+          where: { id: tripId },
+          select: { shapeId: true },
+        })
+      )?.shapeId;
+
+    if (!shapeId) {
+      return [];
+    }
+
+    const rows = await this.prisma.$queryRaw<ApiShapePoint>(
+      Prisma.sql`
+        SELECT
+          shape_id AS "shapeId",
+          shape_pt_sequence AS "sequence",
+          shape_pt_lat AS "lat",
+          shape_pt_lon AS "lon",
+          shape_dist_traveled AS "distTraveled"
+        FROM shape_points
+        WHERE shape_id = ${shapeId}
+        ORDER BY shape_pt_sequence ASC
       `,
     );
 

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class TripStopTimesQueryDto {
   @ApiPropertyOptional({ default: 200 })
@@ -9,4 +9,12 @@ export class TripStopTimesQueryDto {
   @Min(1)
   @Max(500)
   limit: number = 200;
+}
+
+export class TripShapeQueryDto {
+  @ApiPropertyOptional({
+    description: 'Override shape_id when you only have the shape id.',
+  })
+  @IsOptional()
+  shapeId?: string;
 }
