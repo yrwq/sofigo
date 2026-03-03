@@ -8,7 +8,11 @@ import {
 import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { NearbyStopsQueryDto, StopDeparturesQueryDto } from '@/stops/stops.dto';
+import {
+  NearbyStopsQueryDto,
+  StopDeparturesQueryDto,
+  StopRoutesQueryDto,
+} from '@/stops/stops.dto';
 import { StopsService } from '@/stops/stops.service';
 
 @ApiTags('stops')
@@ -83,6 +87,37 @@ export class StopsController {
   ) {
     const dto = await parseQuery(StopDeparturesQueryDto, query);
     return this.stops.stopDepartures(stopId, dto);
+  }
+
+  @Get(':id/routes')
+  @ApiOperation({
+    summary: 'List routes that serve a stop',
+    description:
+      'Returns distinct routes that stop at the given stop for the service date.',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Stop ID from GTFS stop_id.',
+  })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    type: String,
+    description: 'Service date in YYYY-MM-DD.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Maximum number of routes to return.',
+  })
+  async routes(
+    @Param('id') stopId: string,
+    @Query() query: Record<string, unknown>,
+  ) {
+    const dto = await parseQuery(StopRoutesQueryDto, query);
+    return this.stops.stopRoutes(stopId, dto);
   }
 }
 

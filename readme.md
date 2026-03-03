@@ -50,6 +50,8 @@ uses turbo to run both backend and mobile in parallel
 - `GET /routes/{id}/stops?date=2026-03-03&limit=200`
 - `GET /stops/nearby?lat=46.07&lon=18.23&radiusMeters=500&limit=30`
 - `GET /stops/{id}/departures?date=2026-03-03&time=12:30:00&limit=30`
+- `GET /stops/{id}/routes?date=2026-03-03&limit=50`
+- `GET /trips/{id}/stop-times?limit=200`
 - `GET /docs`
 
 ## db notes
