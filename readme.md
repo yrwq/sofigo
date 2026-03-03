@@ -1,6 +1,6 @@
 # sofigo
 
-A transit app for routes, stops, and departures using static GTFS.
+Public transit companion that shows nearby stops, upcoming arrivals, and full route schedules.
 
 ## requirements
 
@@ -25,15 +25,6 @@ docker compose up -d db
 bun run --cwd backend prisma:push
 ```
 
-## import gtfs
-
-get the static GTFS zip from:
-https://mobilitas.biokom.hu/google
-
-```bash
-bun run gtfs:import <path-to-zip>
-```
-
 ## run
 
 ```bash
@@ -44,21 +35,4 @@ uses turbo to run both backend and mobile in parallel
 
 ## api
 
-- `GET /routes`
-- `GET /routes/{id}`
-- `GET /routes/{id}/trips?date=2026-03-03&limit=60`
-- `GET /routes/{id}/stops?date=2026-03-03&limit=200`
-- `GET /stops/nearby?lat=46.07&lon=18.23&radiusMeters=500&limit=30`
-- `GET /stops/{id}/departures?date=2026-03-03&time=12:30:00&limit=30`
-- `GET /stops/{id}/routes?date=2026-03-03&limit=50`
-- `GET /trips/{id}/stop-times?limit=200`
-- `GET /docs`
-
-## db notes
-
-enabled extensions:
-
-- `cube`
-- `earthdistance`
-
-these are enough for nearby stop distance queries
+docs are available via Swagger at `http://localhost:3000/docs`.

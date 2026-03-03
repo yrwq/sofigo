@@ -4,27 +4,18 @@ import { PrismaClient } from '@prisma/client';
 import { loadEnv } from '@/config/load-env';
 import { loadStaticGtfsDataset } from '@/gtfs/gtfs-loader';
 
-const DEFAULT_DB_URL = 'postgresql://postgres:postgres@localhost:5432/sofigo';
+export const DEFAULT_DB_URL = 'postgresql://postgres:postgres@localhost:5432/sofigo';
 
-async function main() {
-  loadEnv();
-  const zipPathArg = process.argv[2] ?? process.env.GTFS_ZIP_PATH;
-
-  if (!zipPathArg) {
-    console.error(
-      'usage: bun run gtfs:import <path-to-zip> (or set GTFS_ZIP_PATH)',
-    );
-    process.exit(1);
-  }
-
-  const zipPath = resolveZipPath(zipPathArg);
-  const databaseUrl = process.env.DATABASE_URL ?? DEFAULT_DB_URL;
-
+export async function importGtfsZip(options: {
+  zipPath: string;
+  databaseUrl?: string;
+}) {
+  const databaseUrl = options.databaseUrl ?? process.env.DATABASE_URL ?? DEFAULT_DB_URL;
   const prisma = new PrismaClient({
     datasources: { db: { url: databaseUrl } },
   });
 
-  const dataset = await loadStaticGtfsDataset(zipPath);
+  const dataset = await loadStaticGtfsDataset(options.zipPath);
 
   await prisma.stopTime.deleteMany();
   await prisma.trip.deleteMany();
@@ -236,9 +227,7 @@ async function insertInChunks<T>(
   }
 }
 
-void main();
-
-function resolveZipPath(zipPathArg: string) {
+export function resolveZipPath(zipPathArg: string) {
   if (isAbsolute(zipPathArg)) {
     return zipPathArg;
   }
@@ -254,4 +243,23 @@ function resolveZipPath(zipPathArg: string) {
   }
 
   return direct;
+}
+
+async function main() {
+  loadEnv();
+  const zipPathArg = process.argv[2] ?? process.env.GTFS_ZIP_PATH;
+
+  if (!zipPathArg) {
+    console.error(
+      'usage: bun run gtfs:import <path-to-zip> (or set GTFS_ZIP_PATH)',
+    );
+    process.exit(1);
+  }
+
+  const zipPath = resolveZipPath(zipPathArg);
+  await importGtfsZip({ zipPath });
+}
+
+if (require.main === module) {
+  void main();
 }

@@ -3,9 +3,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from '@/app.module';
 import { loadEnv } from '@/config/load-env';
+import { autoImportGtfsIfNeeded } from '@/gtfs/gtfs-auto-import';
 
 async function init() {
   loadEnv();
+  await autoImportGtfsIfNeeded();
   const app = await NestFactory.create(AppModule);
   app.useLogger(app.get(Logger));
 
