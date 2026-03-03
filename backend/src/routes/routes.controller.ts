@@ -9,7 +9,7 @@ import {
 import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { RouteTripsQueryDto } from '@/routes/routes.dto';
+import { RouteStopsQueryDto, RouteTripsQueryDto } from '@/routes/routes.dto';
 import { RoutesService } from '@/routes/routes.service';
 
 @ApiTags('routes')
@@ -73,6 +73,36 @@ export class RoutesController {
   ) {
     const dto = await parseQuery(RouteTripsQueryDto, query);
     return this.routes.listTrips(id, dto);
+  }
+
+  @Get(':id/stops')
+  @ApiOperation({
+    summary: 'List stops for a route',
+    description: 'Returns ordered stops for active service on the given date.',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Route ID from GTFS route_id.',
+  })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    type: String,
+    description: 'Service date in YYYY-MM-DD.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Maximum number of stops to return.',
+  })
+  async stops(
+    @Param('id') id: string,
+    @Query() query: Record<string, unknown>,
+  ) {
+    const dto = await parseQuery(RouteStopsQueryDto, query);
+    return this.routes.listStops(id, dto);
   }
 }
 

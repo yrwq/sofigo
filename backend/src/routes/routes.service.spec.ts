@@ -59,4 +59,21 @@ describe('RoutesService', () => {
 
     expect(prisma.$queryRaw).toHaveBeenCalled();
   });
+
+  it('lists stops for a route', async () => {
+    const prisma = {
+      route: {
+        findMany: jest.fn(),
+        findUnique: jest.fn(),
+      },
+      $queryRaw: jest.fn().mockResolvedValue([]),
+    } as unknown as {
+      $queryRaw: () => Promise<unknown>;
+    };
+
+    const service = new RoutesService(prisma);
+    await service.listStops('400', { date: '2026-03-03', limit: 50 });
+
+    expect(prisma.$queryRaw).toHaveBeenCalled();
+  });
 });
