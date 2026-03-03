@@ -7,6 +7,7 @@ import { useMemo, useRef } from 'react';
 import {
   FlatList,
   InteractionManager,
+  Platform,
   StyleSheet,
   Text,
   View,
@@ -61,7 +62,9 @@ export function TripStopsScreen({ route }: Props) {
   return (
     <Screen>
       {isError ? (
-        <Text style={styles.errorText}>Could not load stops.</Text>
+        <View style={styles.header}>
+          <Text style={styles.errorText}>Could not load stops.</Text>
+        </View>
       ) : null}
       <FlatList
         data={data ?? []}
@@ -120,8 +123,13 @@ function isPastStop(
 }
 
 const styles = StyleSheet.create({
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+  },
   list: {
     gap: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   row: {
     flexDirection: 'row',
@@ -151,8 +159,21 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    borderWidth: 1,
-    borderColor: palette.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0f172a',
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 6 },
+      },
+      android: {
+        elevation: 2,
+      },
+      default: {
+        borderWidth: 1,
+        borderColor: palette.border,
+      },
+    }),
     gap: 4,
   },
   cardVisited: {

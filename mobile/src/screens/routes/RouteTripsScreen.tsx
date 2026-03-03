@@ -7,6 +7,7 @@ import { useMemo, useRef } from 'react';
 import {
   FlatList,
   InteractionManager,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -99,9 +100,11 @@ export function RouteTripsScreen({ route, navigation }: Props) {
   return (
     <Screen>
       {isError ? (
-        <Pressable onPress={() => void refetch()}>
-          <Text style={styles.errorText}>Could not load departures.</Text>
-        </Pressable>
+        <View style={styles.header}>
+          <Pressable onPress={() => void refetch()}>
+            <Text style={styles.errorText}>Could not load departures.</Text>
+          </Pressable>
+        </View>
       ) : null}
       <FlatList
         data={orderedTrips}
@@ -170,15 +173,33 @@ export function RouteTripsScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+  },
   list: {
     gap: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   card: {
     backgroundColor: palette.card,
     borderRadius: 16,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: palette.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0f172a',
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 6 },
+      },
+      android: {
+        elevation: 2,
+      },
+      default: {
+        borderWidth: 1,
+        borderColor: palette.border,
+      },
+    }),
     gap: spacing.xs,
   },
   cardVisited: {

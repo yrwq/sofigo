@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { palette, spacing } from '@/theme/theme';
 
 type RouteCardProps = {
@@ -43,12 +43,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: palette.card,
-    borderColor: palette.border,
-    borderWidth: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0f172a',
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 6 },
+      },
+      android: {
+        elevation: 2,
+      },
+      default: {
+        borderColor: palette.border,
+        borderWidth: 1,
+      },
+    }),
     borderRadius: 10,
     padding: spacing.md,
     gap: spacing.md,
-    elevation: 2,
   },
   badge: {
     width: 56,

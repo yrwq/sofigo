@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -131,9 +132,11 @@ export function NearbyScreen() {
     return null;
   };
 
+  const topContent = content();
+
   return (
     <Screen>
-      {content()}
+      {topContent ? <View style={styles.topSection}>{topContent}</View> : null}
       <FlatList
         data={stops ?? []}
         keyExtractor={(item) => item.id}
@@ -271,17 +274,36 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   list: {
     gap: spacing.md,
     paddingTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+  },
+  topSection: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
   },
   stopCard: {
     backgroundColor: palette.card,
     borderRadius: 16,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: palette.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0f172a',
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 6 },
+      },
+      android: {
+        elevation: 2,
+      },
+      default: {
+        borderWidth: 1,
+        borderColor: palette.border,
+      },
+    }),
     gap: spacing.xs,
   },
   stopHeader: {
@@ -315,8 +337,21 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     borderRadius: 12,
     backgroundColor: palette.surface,
-    borderWidth: 1,
-    borderColor: palette.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0f172a',
+        shadowOpacity: 0.06,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 4 },
+      },
+      android: {
+        elevation: 1,
+      },
+      default: {
+        borderWidth: 1,
+        borderColor: palette.border,
+      },
+    }),
   },
   routeBadgeWrap: {
     alignItems: 'center',

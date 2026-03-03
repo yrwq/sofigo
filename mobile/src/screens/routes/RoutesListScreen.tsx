@@ -3,7 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ApiRouteSummary } from '@sofigo/transit-models';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { RouteCard } from '@/components/RouteCard';
 import { Screen } from '@/components/Screen';
 import { getApiBaseUrl } from '@/lib/api';
@@ -39,20 +39,22 @@ export function RoutesListScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <TextInput
-        style={styles.search}
-        placeholder="Search"
-        placeholderTextColor={palette.muted}
-        value={query}
-        onChangeText={setQuery}
-      />
-      {isError ? (
-        <Pressable onPress={() => void refetch()}>
-          <Text style={styles.errorText}>
-            Could not load routes. Tap to retry.
-          </Text>
-        </Pressable>
-      ) : null}
+      <View style={styles.header}>
+        <TextInput
+          style={styles.search}
+          placeholder="Search"
+          placeholderTextColor={palette.muted}
+          value={query}
+          onChangeText={setQuery}
+        />
+        {isError ? (
+          <Pressable onPress={() => void refetch()}>
+            <Text style={styles.errorText}>
+              Could not load routes. Tap to retry.
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
@@ -86,6 +88,11 @@ export function RoutesListScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    gap: spacing.sm,
+  },
   search: {
     backgroundColor: palette.card,
     borderRadius: 10,
@@ -99,6 +106,7 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   errorText: {
     color: palette.danger,

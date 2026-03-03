@@ -12,7 +12,7 @@ type ScreenProps = PropsWithChildren<{
 
 export function Screen({
   children,
-  padded = true,
+  padded = false,
   topPadding = 10,
   horizontalPadding,
   edges = ['left', 'right'],
