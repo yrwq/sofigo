@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import type { ApiRouteSummary, ApiRouteTrip } from '@sofigo/transit-models';
 import { buildActiveServicesCte } from '@/gtfs/gtfs-sql';
 import { resolveServiceDate, resolveServiceDateTime } from '@/gtfs/gtfs-time';
 import { PrismaService } from '@/prisma/prisma.service';
-import type { ApiRouteSummary, ApiRouteTrip } from '@sofigo/transit-models';
 import type {
   RouteStopsQueryDto,
   RouteTripsQueryDto,

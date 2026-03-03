@@ -46,9 +46,41 @@ export type TransitTrip = {
   headsign: string | null;
 };
 
+export type ApiRouteSummary = {
+  id: string;
+  shortName: string;
+  longName: string;
+  color: string | null;
+  textColor: string | null;
+};
+
+export type ApiRouteTrip = {
+  id: string;
+  headsign: string | null;
+  firstStopId: string | null;
+  firstStopName: string | null;
+  firstArrivalTime: string | null;
+  firstDepartureTime: string | null;
+};
+
 export type TripStopTime = {
   tripId: string;
   stopId: string;
+  stopSequence: number;
+  arrivalTime: string;
+  departureTime: string;
+  stopHeadsign: string | null;
+  pickupType: number | null;
+  dropOffType: number | null;
+};
+
+export type ApiTripStopTime = {
+  stopId: string;
+  stopName: string;
+  stopDescription: string | null;
+  lat: number;
+  lon: number;
+  parentStationId: string | null;
   stopSequence: number;
   arrivalTime: string;
   departureTime: string;

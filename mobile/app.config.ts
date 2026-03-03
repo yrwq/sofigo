@@ -14,13 +14,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     dotenv.config({ path: rootEnv });
   }
 
-  const baseConfig = appJson.expo;
+  const baseConfig = appJson.expo as ExpoConfig;
 
   return {
     ...config,
     ...baseConfig,
     extra: {
-      ...baseConfig.extra,
+      ...(baseConfig.extra ?? {}),
       apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:3000',
     },
   };
