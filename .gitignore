@@ -1,0 +1,15 @@
+node_modules
+.DS_Store
+.expo
+.expo-shared
+dist
+coverage
+.turbo
+.idea
+.vscode
+backend/node_modules
+backend/dist
+mobile/node_modules
+mobile/.expo
+mobile/.git.expo-template
+mobile/web-build
