@@ -42,6 +42,12 @@ bun run dev
 
 uses turbo to run both backend and mobile in parallel
 
+## api
+
+- `GET /routes`
+- `GET /stops/nearby?lat=46.07&lon=18.23&radiusMeters=500&limit=30`
+- `GET /stops/{id}/departures?date=2026-03-03&time=12:30:00&limit=30`
+
 ## db notes
 
 enabled extensions:
