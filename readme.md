@@ -1,24 +1,46 @@
 # sofigo
 
-## gtfs
+A transit app for routes, stops, and departures using static GTFS.
 
-get zips from https://mobilitas.biokom.hu/google
+## requirements
 
-## db: 
+- Bun
+- Postgres 17 (docker or local install)
 
-extensions:
+## configure env
+
+```bash
+cp .env.example .env
+```
+
+## start database
+
+```bash
+docker compose up -d db
+```
+
+## import gtfs
+
+get the static GTFS zip from:
+https://mobilitas.biokom.hu/google
+
+```bash
+bun run gtfs:import <path-to-zip>
+```
+
+## run
+
+```bash
+bun run dev
+```
+
+uses turbo to run both backend and mobile in parallel
+
+## db notes
+
+enabled extensions:
 
 - `cube`
 - `earthdistance`
 
-for nearby stop distance queries
-
-```bash
-# start
-docker compose up -d db
-```
-
-```bash
-# connect
-docker compose exec db psql -U postgres -d sofigo
-```
+these are enough for nearby stop distance queries

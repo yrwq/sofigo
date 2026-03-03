@@ -14,7 +14,8 @@ function getExpoHost() {
 }
 
 export function getApiBaseUrl() {
-  const explicitUrl = process.env.EXPO_PUBLIC_API_URL;
+  const explicitUrl =
+    Constants.expoConfig?.extra?.apiUrl ?? process.env.EXPO_PUBLIC_API_URL;
 
   if (explicitUrl) {
     return explicitUrl;

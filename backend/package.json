@@ -20,7 +20,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "gtfs:import": "bun src/gtfs/gtfs-importer.ts",
+    "db:schema": "bun src/db/apply-schema.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -28,7 +30,9 @@
     "@nestjs/platform-express": "^11.0.1",
     "@sofigo/transit-models": "workspace:*",
     "csv-parse": "^6.1.0",
+    "dotenv": "^17.3.1",
     "jszip": "^3.10.1",
+    "postgres": "^3.4.8",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
