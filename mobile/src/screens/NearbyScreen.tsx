@@ -68,6 +68,7 @@ export function NearbyScreen() {
       fetchJson<ApiNearbyStop[]>(
         `${apiBaseUrl}/stops/nearby?lat=${position?.coords.latitude}&lon=${position?.coords.longitude}&radiusMeters=700&limit=12`,
       ),
+    refetchInterval: 60_000,
   });
 
   const departuresQueries = useQueries({
@@ -75,10 +76,11 @@ export function NearbyScreen() {
       queryKey: ['stops', stop.id, 'departures', apiBaseUrl],
       enabled: permission === 'granted',
       queryFn: () =>
-      fetchJson<ApiStopDeparture[]>(
+        fetchJson<ApiStopDeparture[]>(
           `${apiBaseUrl}/stops/${stop.id}/departures?limit=3&time=${formatClockTime()}&lookbackMinutes=10`,
         ),
-      staleTime: 20_000,
+      staleTime: 15_000,
+      refetchInterval: 30_000,
     })),
   });
 

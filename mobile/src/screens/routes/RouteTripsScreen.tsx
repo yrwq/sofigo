@@ -37,6 +37,7 @@ export function RouteTripsScreen({ route, navigation }: Props) {
       fetchJson<ApiRouteTrip[]>(
         `${apiBaseUrl}/routes/${routeId}/trips?limit=200&time=${formatClockTime()}`,
       ),
+    refetchInterval: 30_000,
   });
 
   const trips = (data ?? []).map((trip) => {
