@@ -9,6 +9,7 @@ import { getApiBaseUrl } from '@/lib/api';
 import { fetchJson } from '@/lib/http';
 import type { RoutesStackParamList } from '@/screens/routes/RoutesStack';
 import { palette, spacing } from '@/theme/theme';
+import { normalizeText } from '@/utils/text';
 
 type Props = NativeStackScreenProps<RoutesStackParamList, 'RoutesList'>;
 
@@ -25,12 +26,12 @@ export function RoutesListScreen({ navigation }: Props) {
     if (!data) {
       return [];
     }
-    const lowered = query.trim().toLowerCase();
+    const lowered = normalizeText(query.trim());
     if (!lowered) {
       return data;
     }
     return data.filter((route) =>
-      `${route.shortName} ${route.longName}`.toLowerCase().includes(lowered),
+      normalizeText(`${route.shortName} ${route.longName}`).includes(lowered),
     );
   }, [data, query]);
 
