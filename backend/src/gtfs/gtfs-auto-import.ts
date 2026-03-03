@@ -14,7 +14,8 @@ export async function autoImportGtfsIfNeeded() {
 
   try {
     const routeCount = await prisma.route.count();
-    if (routeCount > 0) {
+    const stopTimeCount = await prisma.stopTime.count();
+    if (routeCount > 0 && stopTimeCount > 0) {
       return;
     }
   } catch (error) {
@@ -29,7 +30,8 @@ export async function autoImportGtfsIfNeeded() {
         datasources: { db: { url: databaseUrl } },
       });
       const routeCount = await prisma.route.count();
-      if (routeCount > 0) {
+      const stopTimeCount = await prisma.stopTime.count();
+      if (routeCount > 0 && stopTimeCount > 0) {
         return;
       }
     } else {
