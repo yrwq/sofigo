@@ -197,7 +197,9 @@ export class RoutesService {
 }
 
 function toSeconds(value: string) {
-  const [hours, minutes, seconds] = value.split(':').map((part) => Number(part));
+  const [hours, minutes, seconds] = value
+    .split(':')
+    .map((part) => Number(part));
   return (hours || 0) * 3600 + (minutes || 0) * 60 + (seconds || 0);
 }
 
