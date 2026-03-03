@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Route {
+  id          String  @id @map("route_id")
+  shortName   String  @map("route_short_name")
+  longName    String  @map("route_long_name")
+  color       String? @map("route_color")
+  textColor   String? @map("route_text_color")
+  trips       Trip[]
+
+  @@map("routes")
+}
+
+model Stop {
+  id              String  @id @map("stop_id")
+  name            String  @map("stop_name")
+  description     String? @map("stop_desc")
+  lat             Float   @map("stop_lat")
+  lon             Float   @map("stop_lon")
+  parentStationId String? @map("parent_station_id")
+  stopTimes       StopTime[]
+
+  @@map("stops")
+}
+
+model ServiceCalendar {
+  id        String  @id @map("service_id")
+  monday    Boolean
+  tuesday   Boolean
+  wednesday Boolean
+  thursday  Boolean
+  friday    Boolean
+  saturday  Boolean
+  sunday    Boolean
+  startDate String  @map("start_date")
+  endDate   String  @map("end_date")
+  trips     Trip[]
+
+  @@map("service_calendars")
+}
+
+model ServiceException {
+  serviceId     String  @map("service_id")
+  date          String
+  exceptionType Int     @map("exception_type")
+
+  @@id([serviceId, date])
+  @@map("service_exceptions")
+}
+
+model Trip {
+  id        String  @id @map("trip_id")
+  routeId   String  @map("route_id")
+  serviceId String  @map("service_id")
+  shapeId   String? @map("shape_id")
+  headsign  String? @map("trip_headsign")
+
+  route   Route           @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  service ServiceCalendar @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  stopTimes StopTime[]
+
+  @@map("trips")
+}
+
+model StopTime {
+  tripId       String  @map("trip_id")
+  stopId       String  @map("stop_id")
+  stopSequence Int     @map("stop_sequence")
+  arrivalTime  String  @map("arrival_time")
+  departureTime String @map("departure_time")
+  stopHeadsign String? @map("stop_headsign")
+  pickupType   Int?    @map("pickup_type")
+  dropOffType  Int?    @map("drop_off_type")
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  stop Stop @relation(fields: [stopId], references: [id], onDelete: Cascade)
+
+  @@id([tripId, stopSequence])
+  @@map("stop_times")
+}
+
+model ShapePoint {
+  shapeId        String  @map("shape_id")
+  sequence       Int     @map("shape_pt_sequence")
+  lat            Float   @map("shape_pt_lat")
+  lon            Float   @map("shape_pt_lon")
+  distTraveled   Float?  @map("shape_dist_traveled")
+
+  @@id([shapeId, sequence])
+  @@map("shape_points")
+}

@@ -19,6 +19,12 @@ cp .env.example .env
 docker compose up -d db
 ```
 
+## apply schema
+
+```bash
+bun run --cwd backend prisma:push
+```
+
 ## import gtfs
 
 get the static GTFS zip from:

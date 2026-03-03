@@ -21,7 +21,6 @@
     "format": "biome format --write .",
     "test": "turbo run test",
     "test:backend": "turbo run test --filter=backend",
-    "db:schema": "bun run --cwd backend db:schema",
     "gtfs:import": "bun run --cwd backend gtfs:import",
     "typecheck": "turbo run typecheck",
     "typecheck:backend": "turbo run typecheck --filter=backend",

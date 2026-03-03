@@ -1,12 +1,13 @@
-import 'dotenv/config';
 import { existsSync } from 'node:fs';
 import { isAbsolute, resolve } from 'node:path';
-import { createSqlClient } from '@/db/postgres';
+import { PrismaClient } from '@prisma/client';
+import { loadEnv } from '@/config/load-env';
 import { loadStaticGtfsDataset } from '@/gtfs/gtfs-loader';
 
 const DEFAULT_DB_URL = 'postgresql://postgres:postgres@localhost:5432/sofigo';
 
 async function main() {
+  loadEnv();
   const zipPathArg = process.argv[2] ?? process.env.GTFS_ZIP_PATH;
 
   if (!zipPathArg) {
@@ -18,30 +19,37 @@ async function main() {
 
   const zipPath = resolveZipPath(zipPathArg);
   const databaseUrl = process.env.DATABASE_URL ?? DEFAULT_DB_URL;
-  const sql = createSqlClient(databaseUrl);
+
+  const prisma = new PrismaClient({
+    datasources: { db: { url: databaseUrl } },
+  });
 
   const dataset = await loadStaticGtfsDataset(zipPath);
 
-  await sql.begin(async (tx) => {
-    await tx`TRUNCATE stop_times, trips, shape_points, service_exceptions, service_calendars, stops, routes RESTART IDENTITY CASCADE`;
+  await prisma.stopTime.deleteMany();
+  await prisma.trip.deleteMany();
+  await prisma.shapePoint.deleteMany();
+  await prisma.serviceException.deleteMany();
+  await prisma.serviceCalendar.deleteMany();
+  await prisma.stop.deleteMany();
+  await prisma.route.deleteMany();
 
-    await insertRoutes(tx, dataset.routes);
-    await insertStops(tx, dataset.stops);
-    await insertCalendars(tx, dataset.calendars);
-    await insertExceptions(tx, dataset.serviceExceptions);
-    await insertTrips(tx, dataset.trips);
-    await insertStopTimes(tx, dataset.stopTimes);
-    await insertShapePoints(tx, dataset.shapePoints);
-  });
+  await insertRoutes(prisma, dataset.routes);
+  await insertStops(prisma, dataset.stops);
+  await insertCalendars(prisma, dataset.calendars);
+  await insertExceptions(prisma, dataset.serviceExceptions);
+  await insertTrips(prisma, dataset.trips);
+  await insertStopTimes(prisma, dataset.stopTimes);
+  await insertShapePoints(prisma, dataset.shapePoints);
 
-  await sql.end({ timeout: 5 });
+  await prisma.$disconnect();
   console.log('GTFS import completed.');
 }
 
-type Sql = ReturnType<typeof createSqlClient>;
+type PrismaTx = PrismaClient;
 
 async function insertRoutes(
-  sql: Sql,
+  tx: PrismaTx,
   routes: Array<{
     id: string;
     shortName: string;
@@ -51,28 +59,20 @@ async function insertRoutes(
   }>,
 ) {
   const rows = routes.map((route) => ({
-    route_id: route.id,
-    route_short_name: route.shortName,
-    route_long_name: route.longName,
-    route_color: route.color,
-    route_text_color: route.textColor,
+    id: route.id,
+    shortName: route.shortName,
+    longName: route.longName,
+    color: route.color,
+    textColor: route.textColor,
   }));
 
-  await insertInChunks(
-    rows,
-    [
-      'route_id',
-      'route_short_name',
-      'route_long_name',
-      'route_color',
-      'route_text_color',
-    ],
-    (chunk, columns) => sql`insert into routes ${sql(chunk, columns)}`,
+  await insertInChunks(rows, (chunk) =>
+    tx.route.createMany({ data: chunk, skipDuplicates: true }),
   );
 }
 
 async function insertStops(
-  sql: Sql,
+  tx: PrismaTx,
   stops: Array<{
     id: string;
     name: string;
@@ -82,30 +82,21 @@ async function insertStops(
   }>,
 ) {
   const rows = stops.map((stop) => ({
-    stop_id: stop.id,
-    stop_name: stop.name,
-    stop_desc: stop.description,
-    stop_lat: stop.location.lat,
-    stop_lon: stop.location.lon,
-    parent_station_id: stop.parentStationId,
+    id: stop.id,
+    name: stop.name,
+    description: stop.description,
+    lat: stop.location.lat,
+    lon: stop.location.lon,
+    parentStationId: stop.parentStationId,
   }));
 
-  await insertInChunks(
-    rows,
-    [
-      'stop_id',
-      'stop_name',
-      'stop_desc',
-      'stop_lat',
-      'stop_lon',
-      'parent_station_id',
-    ],
-    (chunk, columns) => sql`insert into stops ${sql(chunk, columns)}`,
+  await insertInChunks(rows, (chunk) =>
+    tx.stop.createMany({ data: chunk, skipDuplicates: true }),
   );
 }
 
 async function insertCalendars(
-  sql: Sql,
+  tx: PrismaTx,
   calendars: Array<{
     id: string;
     monday: boolean;
@@ -120,7 +111,7 @@ async function insertCalendars(
   }>,
 ) {
   const rows = calendars.map((calendar) => ({
-    service_id: calendar.id,
+    id: calendar.id,
     monday: calendar.monday,
     tuesday: calendar.tuesday,
     wednesday: calendar.wednesday,
@@ -128,31 +119,17 @@ async function insertCalendars(
     friday: calendar.friday,
     saturday: calendar.saturday,
     sunday: calendar.sunday,
-    start_date: calendar.startDate,
-    end_date: calendar.endDate,
+    startDate: calendar.startDate,
+    endDate: calendar.endDate,
   }));
 
-  await insertInChunks(
-    rows,
-    [
-      'service_id',
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-      'sunday',
-      'start_date',
-      'end_date',
-    ],
-    (chunk, columns) =>
-      sql`insert into service_calendars ${sql(chunk, columns)}`,
+  await insertInChunks(rows, (chunk) =>
+    tx.serviceCalendar.createMany({ data: chunk, skipDuplicates: true }),
   );
 }
 
 async function insertExceptions(
-  sql: Sql,
+  tx: PrismaTx,
   exceptions: Array<{
     serviceId: string;
     date: string;
@@ -160,21 +137,18 @@ async function insertExceptions(
   }>,
 ) {
   const rows = exceptions.map((exception) => ({
-    service_id: exception.serviceId,
+    serviceId: exception.serviceId,
     date: exception.date,
-    exception_type: exception.exceptionType,
+    exceptionType: exception.exceptionType,
   }));
 
-  await insertInChunks(
-    rows,
-    ['service_id', 'date', 'exception_type'],
-    (chunk, columns) =>
-      sql`insert into service_exceptions ${sql(chunk, columns)}`,
+  await insertInChunks(rows, (chunk) =>
+    tx.serviceException.createMany({ data: chunk, skipDuplicates: true }),
   );
 }
 
 async function insertTrips(
-  sql: Sql,
+  tx: PrismaTx,
   trips: Array<{
     id: string;
     routeId: string;
@@ -184,22 +158,20 @@ async function insertTrips(
   }>,
 ) {
   const rows = trips.map((trip) => ({
-    trip_id: trip.id,
-    route_id: trip.routeId,
-    service_id: trip.serviceId,
-    shape_id: trip.shapeId,
-    trip_headsign: trip.headsign,
+    id: trip.id,
+    routeId: trip.routeId,
+    serviceId: trip.serviceId,
+    shapeId: trip.shapeId,
+    headsign: trip.headsign,
   }));
 
-  await insertInChunks(
-    rows,
-    ['trip_id', 'route_id', 'service_id', 'shape_id', 'trip_headsign'],
-    (chunk, columns) => sql`insert into trips ${sql(chunk, columns)}`,
+  await insertInChunks(rows, (chunk) =>
+    tx.trip.createMany({ data: chunk, skipDuplicates: true }),
   );
 }
 
 async function insertStopTimes(
-  sql: Sql,
+  tx: PrismaTx,
   stopTimes: Array<{
     tripId: string;
     stopId: string;
@@ -212,35 +184,25 @@ async function insertStopTimes(
   }>,
 ) {
   const rows = stopTimes.map((stopTime) => ({
-    trip_id: stopTime.tripId,
-    stop_id: stopTime.stopId,
-    stop_sequence: stopTime.stopSequence,
-    arrival_time: stopTime.arrivalTime,
-    departure_time: stopTime.departureTime,
-    stop_headsign: stopTime.stopHeadsign,
-    pickup_type: stopTime.pickupType,
-    drop_off_type: stopTime.dropOffType,
+    tripId: stopTime.tripId,
+    stopId: stopTime.stopId,
+    stopSequence: stopTime.stopSequence,
+    arrivalTime: stopTime.arrivalTime,
+    departureTime: stopTime.departureTime,
+    stopHeadsign: stopTime.stopHeadsign,
+    pickupType: stopTime.pickupType,
+    dropOffType: stopTime.dropOffType,
   }));
 
   await insertInChunks(
     rows,
-    [
-      'trip_id',
-      'stop_id',
-      'stop_sequence',
-      'arrival_time',
-      'departure_time',
-      'stop_headsign',
-      'pickup_type',
-      'drop_off_type',
-    ],
-    (chunk, columns) => sql`insert into stop_times ${sql(chunk, columns)}`,
+    (chunk) => tx.stopTime.createMany({ data: chunk, skipDuplicates: true }),
     5000,
   );
 }
 
 async function insertShapePoints(
-  sql: Sql,
+  tx: PrismaTx,
   shapePoints: Array<{
     shapeId: string;
     sequence: number;
@@ -249,39 +211,28 @@ async function insertShapePoints(
   }>,
 ) {
   const rows = shapePoints.map((point) => ({
-    shape_id: point.shapeId,
-    shape_pt_sequence: point.sequence,
-    shape_pt_lat: point.location.lat,
-    shape_pt_lon: point.location.lon,
-    shape_dist_traveled: point.distanceTraveledKm,
+    shapeId: point.shapeId,
+    sequence: point.sequence,
+    lat: point.location.lat,
+    lon: point.location.lon,
+    distTraveled: point.distanceTraveledKm,
   }));
 
   await insertInChunks(
     rows,
-    [
-      'shape_id',
-      'shape_pt_sequence',
-      'shape_pt_lat',
-      'shape_pt_lon',
-      'shape_dist_traveled',
-    ],
-    (chunk, columns) => sql`insert into shape_points ${sql(chunk, columns)}`,
+    (chunk) => tx.shapePoint.createMany({ data: chunk, skipDuplicates: true }),
     5000,
   );
 }
 
-async function insertInChunks(
-  rows: Array<Record<string, unknown>>,
-  columns: string[],
-  insertChunk: (
-    chunk: Array<Record<string, unknown>>,
-    columns: string[],
-  ) => Promise<unknown>,
+async function insertInChunks<T>(
+  rows: T[],
+  insertChunk: (chunk: T[]) => Promise<unknown>,
   chunkSize = 1000,
 ) {
   for (let offset = 0; offset < rows.length; offset += chunkSize) {
     const chunk = rows.slice(offset, offset + chunkSize);
-    await insertChunk(chunk, columns);
+    await insertChunk(chunk);
   }
 }
 
