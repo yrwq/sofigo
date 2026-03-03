@@ -1,22 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import type { ApiTripStopTime } from '@sofigo/transit-models';
 import { PrismaService } from '@/prisma/prisma.service';
 import type { TripStopTimesQueryDto } from '@/trips/trips.dto';
-
-type TripStopTime = {
-  stopId: string;
-  stopName: string;
-  stopDescription: string | null;
-  lat: number;
-  lon: number;
-  parentStationId: string | null;
-  stopSequence: number;
-  arrivalTime: string;
-  departureTime: string;
-  stopHeadsign: string | null;
-  pickupType: number | null;
-  dropOffType: number | null;
-};
 
 @Injectable()
 export class TripsService {
@@ -25,7 +11,7 @@ export class TripsService {
   async listStopTimes(tripId: string, query: TripStopTimesQueryDto) {
     const { limit } = query;
 
-    const rows = await this.prisma.$queryRaw<TripStopTime>(
+    const rows = await this.prisma.$queryRaw<ApiTripStopTime>(
       Prisma.sql`
         SELECT
           s.stop_id AS "stopId",

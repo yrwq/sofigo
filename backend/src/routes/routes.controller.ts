@@ -62,6 +62,12 @@ export class RoutesController {
     description: 'Service date in YYYY-MM-DD.',
   })
   @ApiQuery({
+    name: 'time',
+    required: false,
+    type: String,
+    description: 'Earliest departure time in HH:MM:SS.',
+  })
+  @ApiQuery({
     name: 'limit',
     required: false,
     type: Number,
