@@ -1,7 +1,16 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ApiRouteTrip } from '@sofigo/transit-models';
 import { useQuery } from '@tanstack/react-query';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useRef } from 'react';
+import {
+  FlatList,
+  InteractionManager,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Screen } from '@/components/Screen';
 import { getApiBaseUrl } from '@/lib/api';
 import { fetchJson } from '@/lib/http';
@@ -50,14 +59,39 @@ export function RouteTripsScreen({ route, navigation }: Props) {
     };
   });
 
-  const orderedTrips = trips.sort((a, b) => {
-    const rank = (value: typeof a.status) =>
-      value === 'past' ? 0 : value === 'active' ? 1 : 2;
-    const rankDiff = rank(a.status) - rank(b.status);
-    if (rankDiff !== 0) {
-      return rankDiff;
+  const orderedTrips = useMemo(() => {
+    return trips.sort((a, b) => {
+      const rank = (value: typeof a.status) =>
+        value === 'past' ? 0 : value === 'active' ? 1 : 2;
+      const rankDiff = rank(a.status) - rank(b.status);
+      if (rankDiff !== 0) {
+        return rankDiff;
+      }
+      return a.sortKey - b.sortKey;
+    });
+  }, [trips]);
+
+  const listRef = useRef<FlatList<ApiRouteTrip>>(null);
+  const activeIndex = orderedTrips.findIndex(
+    (trip) => trip.status === 'active',
+  );
+  const itemHeight = 92;
+
+  useFocusEffect(() => {
+    if (activeIndex <= 0) {
+      return;
     }
-    return a.sortKey - b.sortKey;
+    const task = InteractionManager.runAfterInteractions(() => {
+      const timer = setTimeout(() => {
+        listRef.current?.scrollToIndex({
+          index: activeIndex,
+          animated: true,
+          viewPosition: 0,
+        });
+      }, 120);
+      return () => clearTimeout(timer);
+    });
+    return () => task.cancel();
   });
 
   return (
@@ -69,6 +103,20 @@ export function RouteTripsScreen({ route, navigation }: Props) {
       ) : null}
       <FlatList
         data={orderedTrips}
+        ref={listRef}
+        getItemLayout={(_, index) => ({
+          length: itemHeight,
+          offset: itemHeight * index,
+          index,
+        })}
+        onScrollToIndexFailed={() => {
+          if (activeIndex > 0) {
+            listRef.current?.scrollToOffset({
+              offset: activeIndex * itemHeight,
+              animated: true,
+            });
+          }
+        }}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (

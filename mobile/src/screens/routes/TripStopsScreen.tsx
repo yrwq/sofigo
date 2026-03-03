@@ -1,7 +1,15 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ApiTripStopTime } from '@sofigo/transit-models';
 import { useQuery } from '@tanstack/react-query';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useRef } from 'react';
+import {
+  FlatList,
+  InteractionManager,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Screen } from '@/components/Screen';
 import { getApiBaseUrl } from '@/lib/api';
 import { fetchJson } from '@/lib/http';
@@ -23,6 +31,31 @@ export function TripStopsScreen({ route }: Props) {
       ),
   });
 
+  const listRef = useRef<FlatList<ApiTripStopTime>>(null);
+  const stopIndex = useMemo(() => {
+    if (!currentStopId) {
+      return -1;
+    }
+    return (data ?? []).findIndex((stop) => stop.stopId === currentStopId);
+  }, [currentStopId, data]);
+
+  useFocusEffect(() => {
+    if (stopIndex <= 0) {
+      return;
+    }
+    const task = InteractionManager.runAfterInteractions(() => {
+      const timer = setTimeout(() => {
+        listRef.current?.scrollToIndex({
+          index: stopIndex,
+          animated: true,
+          viewPosition: 0,
+        });
+      }, 120);
+      return () => clearTimeout(timer);
+    });
+    return () => task.cancel();
+  });
+
   return (
     <Screen>
       {isError ? (
@@ -30,6 +63,7 @@ export function TripStopsScreen({ route }: Props) {
       ) : null}
       <FlatList
         data={data ?? []}
+        ref={listRef}
         keyExtractor={(item) => `${item.stopId}-${item.stopSequence}`}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
