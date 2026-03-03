@@ -2,6 +2,9 @@
 
 Public transit companion that shows nearby stops, upcoming arrivals, and full route schedules.
 
+> [!NOTE]
+> Could be useful by me only, this repo is a demo/showcase app for portfolio purposes.
+
 ## requirements
 
 - Bun
@@ -31,8 +34,8 @@ bun run --cwd backend prisma:push
 bun run dev
 ```
 
-uses turbo to run both backend and mobile in parallel
+Uses turbo to run both backend and mobile in parallel
 
 ## api
 
-docs are available via Swagger at `http://localhost:3000/docs`.
+Docs are available via Swagger at `http://localhost:3000/docs`.
