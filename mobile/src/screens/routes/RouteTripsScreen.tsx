@@ -1,3 +1,4 @@
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ApiRouteTrip } from '@sofigo/transit-models';
@@ -11,6 +12,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '@/components/Screen';
 import { getApiBaseUrl } from '@/lib/api';
 import { fetchJson } from '@/lib/http';
@@ -27,6 +29,8 @@ type Props = NativeStackScreenProps<RoutesStackParamList, 'RouteTrips'>;
 export function RouteTripsScreen({ route, navigation }: Props) {
   const apiBaseUrl = getApiBaseUrl();
   const { routeId, routeName } = route.params;
+  const tabBarHeight = useBottomTabBarHeight();
+  const insets = useSafeAreaInsets();
 
   const { data, isError, refetch } = useQuery({
     queryKey: ['routes', routeId, 'trips', apiBaseUrl],
@@ -118,7 +122,10 @@ export function RouteTripsScreen({ route, navigation }: Props) {
           }
         }}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[
+          styles.list,
+          { paddingBottom: spacing.xl + tabBarHeight + insets.bottom },
+        ]}
         renderItem={({ item }) => (
           <Pressable
             style={[styles.card, item.status === 'past' && styles.cardVisited]}
@@ -167,7 +174,6 @@ export function RouteTripsScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   list: {
     gap: spacing.md,
-    paddingBottom: spacing.xl,
   },
   card: {
     backgroundColor: palette.card,

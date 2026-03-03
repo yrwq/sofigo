@@ -1,3 +1,4 @@
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ApiTripStopTime } from '@sofigo/transit-models';
@@ -10,6 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '@/components/Screen';
 import { getApiBaseUrl } from '@/lib/api';
 import { fetchJson } from '@/lib/http';
@@ -22,6 +24,8 @@ type Props = NativeStackScreenProps<RoutesStackParamList, 'TripStops'>;
 export function TripStopsScreen({ route }: Props) {
   const apiBaseUrl = getApiBaseUrl();
   const { tripId, currentStopId, isPast } = route.params;
+  const tabBarHeight = useBottomTabBarHeight();
+  const insets = useSafeAreaInsets();
 
   const { data, isError } = useQuery({
     queryKey: ['trips', tripId, 'stop-times', apiBaseUrl],
@@ -65,7 +69,10 @@ export function TripStopsScreen({ route }: Props) {
         data={data ?? []}
         ref={listRef}
         keyExtractor={(item) => `${item.stopId}-${item.stopSequence}`}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[
+          styles.list,
+          { paddingBottom: spacing.xl + tabBarHeight + insets.bottom },
+        ]}
         renderItem={({ item }) => (
           <View style={styles.row}>
             <View style={styles.timeline}>
@@ -117,7 +124,6 @@ function isPastStop(
 const styles = StyleSheet.create({
   list: {
     gap: spacing.md,
-    paddingBottom: spacing.xl,
   },
   row: {
     flexDirection: 'row',
