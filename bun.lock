@@ -63,6 +63,7 @@
         "expo-blur": "~15.0.7",
         "expo-constants": "~18.0.13",
         "expo-haptics": "~15.0.7",
+        "expo-location": "^55.1.2",
         "expo-status-bar": "~3.0.9",
         "react": "19.1.0",
         "react-dom": "19.1.0",
@@ -1074,6 +1075,8 @@
     "expo-haptics": ["expo-haptics@15.0.8", "", { "peerDependencies": { "expo": "*" } }, "sha512-lftutojy8Qs8zaDzzjwM3gKHFZ8bOOEZDCkmh2Ddpe95Ra6kt2izeOfOfKuP/QEh0MZ1j9TfqippyHdRd1ZM9g=="],
 
     "expo-keep-awake": ["expo-keep-awake@15.0.8", "", { "peerDependencies": { "expo": "*", "react": "*" } }, "sha512-YK9M1VrnoH1vLJiQzChZgzDvVimVoriibiDIFLbQMpjYBnvyfUeHJcin/Gx1a+XgupNXy92EQJLgI/9ZuXajYQ=="],
+
+    "expo-location": ["expo-location@55.1.2", "", { "dependencies": { "@expo/image-utils": "^0.8.12" }, "peerDependencies": { "expo": "*" } }, "sha512-QT/9Hh0mjBnsJD1A6VYVKskFK9PODTpHVMA3DmGDTbvKS55yhY/fj6f28dn3zAYTaLAWIZa5j3/C+LCJSq7kwA=="],
 
     "expo-modules-autolinking": ["expo-modules-autolinking@3.0.24", "", { "dependencies": { "@expo/spawn-async": "^1.7.2", "chalk": "^4.1.0", "commander": "^7.2.0", "require-from-string": "^2.0.2", "resolve-from": "^5.0.0" }, "bin": { "expo-modules-autolinking": "bin/expo-modules-autolinking.js" } }, "sha512-TP+6HTwhL7orDvsz2VzauyQlXJcAWyU3ANsZ7JGL4DQu8XaZv/A41ZchbtAYLfozNA2Ya1Hzmhx65hXryBMjaQ=="],
 

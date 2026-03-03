@@ -72,12 +72,13 @@ export class StopsService {
   }
 
   async stopDepartures(stopId: string, query: StopDeparturesQueryDto) {
-    const { date, time, limit } = query;
+    const { date, time, limit, lookbackMinutes } = query;
     const { serviceDate, serviceTime, weekday } = resolveServiceDateTime(
       date,
       time,
     );
     const activeServicesCte = buildActiveServicesCte(serviceDate, weekday);
+    const minServiceTime = subtractMinutes(serviceTime, lookbackMinutes);
 
     const rows = await this.prisma.$queryRaw<StopDeparture>(
       Prisma.sql`
@@ -96,7 +97,7 @@ export class StopsService {
         JOIN routes r ON r.route_id = t.route_id
         WHERE st.stop_id = ${stopId}
           AND t.service_id IN (SELECT service_id FROM active_services)
-          AND st.departure_time >= ${serviceTime}
+          AND st.departure_time >= ${minServiceTime}
         ORDER BY st.departure_time ASC
         LIMIT ${limit}
       `,
@@ -137,4 +138,21 @@ export class StopsService {
 
     return rows;
   }
+}
+
+function subtractMinutes(time: string, minutes: number) {
+  if (minutes <= 0) {
+    return time;
+  }
+  const [hours, mins, secs] = time.split(':').map((part) => Number(part));
+  const total = (hours || 0) * 3600 + (mins || 0) * 60 + (secs || 0);
+  const adjusted = Math.max(0, total - minutes * 60);
+  const nextHours = Math.floor(adjusted / 3600);
+  const nextMins = Math.floor((adjusted % 3600) / 60);
+  const nextSecs = adjusted % 60;
+  return [
+    String(nextHours).padStart(2, '0'),
+    String(nextMins).padStart(2, '0'),
+    String(nextSecs).padStart(2, '0'),
+  ].join(':');
 }

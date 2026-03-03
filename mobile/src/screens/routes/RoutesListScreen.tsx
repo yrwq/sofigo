@@ -1,6 +1,5 @@
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ApiRouteSummary } from '@sofigo/transit-models';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
@@ -19,7 +18,6 @@ export function RoutesListScreen({ navigation }: Props) {
   const apiBaseUrl = getApiBaseUrl();
   const [query, setQuery] = useState('');
   const tabBarHeight = useBottomTabBarHeight();
-  const insets = useSafeAreaInsets();
 
   const { data, isError, refetch } = useQuery({
     queryKey: ['routes', apiBaseUrl],
@@ -60,7 +58,7 @@ export function RoutesListScreen({ navigation }: Props) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.list,
-          { paddingBottom: spacing.xl + tabBarHeight + insets.bottom },
+          { paddingBottom: spacing.lg + tabBarHeight },
         ]}
         renderItem={({ item }) => (
           <Pressable

@@ -11,7 +11,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '@/components/Screen';
 import { getApiBaseUrl } from '@/lib/api';
 import { fetchJson } from '@/lib/http';
@@ -25,7 +24,6 @@ export function TripStopsScreen({ route }: Props) {
   const apiBaseUrl = getApiBaseUrl();
   const { tripId, currentStopId, isPast } = route.params;
   const tabBarHeight = useBottomTabBarHeight();
-  const insets = useSafeAreaInsets();
 
   const { data, isError } = useQuery({
     queryKey: ['trips', tripId, 'stop-times', apiBaseUrl],
@@ -71,7 +69,7 @@ export function TripStopsScreen({ route }: Props) {
         keyExtractor={(item) => `${item.stopId}-${item.stopSequence}`}
         contentContainerStyle={[
           styles.list,
-          { paddingBottom: spacing.xl + tabBarHeight + insets.bottom },
+          { paddingBottom: spacing.lg + tabBarHeight },
         ]}
         renderItem={({ item }) => (
           <View style={styles.row}>

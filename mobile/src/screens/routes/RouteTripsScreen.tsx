@@ -12,7 +12,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '@/components/Screen';
 import { getApiBaseUrl } from '@/lib/api';
 import { fetchJson } from '@/lib/http';
@@ -30,7 +29,6 @@ export function RouteTripsScreen({ route, navigation }: Props) {
   const apiBaseUrl = getApiBaseUrl();
   const { routeId, routeName } = route.params;
   const tabBarHeight = useBottomTabBarHeight();
-  const insets = useSafeAreaInsets();
 
   const { data, isError, refetch } = useQuery({
     queryKey: ['routes', routeId, 'trips', apiBaseUrl],
@@ -124,7 +122,7 @@ export function RouteTripsScreen({ route, navigation }: Props) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.list,
-          { paddingBottom: spacing.xl + tabBarHeight + insets.bottom },
+          { paddingBottom: spacing.lg + tabBarHeight },
         ]}
         renderItem={({ item }) => (
           <Pressable

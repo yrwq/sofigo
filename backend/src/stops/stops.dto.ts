@@ -46,6 +46,13 @@ export class StopDeparturesQueryDto {
   @Matches(/^\d{2}:\d{2}:\d{2}$/)
   time?: string;
 
+  @ApiPropertyOptional({ default: 10 })
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(120)
+  lookbackMinutes: number = 10;
+
   @ApiPropertyOptional({ default: 30 })
   @Type(() => Number)
   @IsInt()

@@ -54,6 +54,27 @@ export type ApiRouteSummary = {
   textColor: string | null;
 };
 
+export type ApiNearbyStop = {
+  id: string;
+  name: string;
+  description: string | null;
+  lat: number;
+  lon: number;
+  parentStationId: string | null;
+  distanceMeters: number;
+};
+
+export type ApiStopDeparture = {
+  tripId: string;
+  routeId: string;
+  routeShortName: string;
+  routeLongName: string;
+  headsign: string | null;
+  arrivalTime: string;
+  departureTime: string;
+  stopSequence: number;
+};
+
 export type ApiRouteTrip = {
   id: string;
   headsign: string | null;

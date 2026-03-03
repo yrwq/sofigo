@@ -76,6 +76,12 @@ export class StopsController {
     description: 'Earliest departure time in HH:MM:SS.',
   })
   @ApiQuery({
+    name: 'lookbackMinutes',
+    required: false,
+    type: Number,
+    description: 'Include departures that started this many minutes ago.',
+  })
+  @ApiQuery({
     name: 'limit',
     required: false,
     type: Number,

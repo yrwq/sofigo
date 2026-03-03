@@ -1,8 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { RoutesListScreen } from '@/screens/routes/RoutesListScreen';
 import { RouteTripsScreen } from '@/screens/routes/RouteTripsScreen';
 import { TripStopsScreen } from '@/screens/routes/TripStopsScreen';
-import { palette } from '@/theme/theme';
+import { palette, spacing } from '@/theme/theme';
 
 export type RoutesStackParamList = {
   RoutesList: undefined;
@@ -36,15 +38,61 @@ export function RoutesStack() {
       <Stack.Screen
         name="RouteTrips"
         component={RouteTripsScreen}
-        options={({ route }) => ({ title: route.params.routeName })}
+        options={({ route, navigation }) => ({
+          title: route.params.routeName,
+          headerLeft: () => (
+            <BackButton
+              onPress={() => {
+                navigation.navigate('RoutesList');
+              }}
+            />
+          ),
+        })}
       />
       <Stack.Screen
         name="TripStops"
         component={TripStopsScreen}
-        options={({ route }) => ({
-          title: route.params.headsign ?? route.params.routeName,
+        options={({ route, navigation }) => ({
+          title: route.params.headsign
+            ? `${route.params.routeName} · ${route.params.headsign}`
+            : route.params.routeName,
+          headerLeft: () => (
+            <BackButton
+              onPress={() => {
+                navigation.navigate('RoutesList');
+              }}
+            />
+          ),
         })}
       />
     </Stack.Navigator>
   );
 }
+
+type BackButtonProps = {
+  onPress: () => void;
+};
+
+function BackButton({ onPress }: BackButtonProps) {
+  return (
+    <Pressable onPress={onPress} style={styles.backButton}>
+      <Ionicons name="chevron-back" size={20} color={palette.ink} />
+      <Text style={styles.backLabel}>Back</Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.xs,
+    paddingRight: spacing.sm,
+  },
+  backLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: palette.ink,
+  },
+});
