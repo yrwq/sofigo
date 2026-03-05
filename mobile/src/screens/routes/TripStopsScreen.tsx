@@ -53,21 +53,22 @@ export function TripStopsScreen({ route }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-    if (stopIndex <= 0) {
-      return;
-    }
-    const task = InteractionManager.runAfterInteractions(() => {
-      const timer = setTimeout(() => {
-        listRef.current?.scrollToIndex({
-          index: stopIndex,
-          animated: true,
-          viewPosition: 0.15,
-        });
-      }, 120);
-      return () => clearTimeout(timer);
-    });
-    return () => task.cancel();
-  }, [stopIndex]));
+      if (stopIndex <= 0) {
+        return;
+      }
+      const task = InteractionManager.runAfterInteractions(() => {
+        const timer = setTimeout(() => {
+          listRef.current?.scrollToIndex({
+            index: stopIndex,
+            animated: true,
+            viewPosition: 0.15,
+          });
+        }, 120);
+        return () => clearTimeout(timer);
+      });
+      return () => task.cancel();
+    }, [stopIndex])
+  );
 
   const mapCoords = useMemo(
     () =>
@@ -111,6 +112,16 @@ export function TripStopsScreen({ route }: Props) {
       <FlatList
         data={data ?? []}
         ref={listRef}
+        onScrollToIndexFailed={(info) => {
+          const wait = new Promise((resolve) => setTimeout(resolve, 500));
+          wait.then(() => {
+            listRef.current?.scrollToIndex({
+              index: info.index,
+              animated: true,
+              viewPosition: 0.15,
+            });
+          });
+        }}
         keyExtractor={(item) => `${item.stopId}-${item.stopSequence}`}
         contentContainerStyle={[
           styles.list,
